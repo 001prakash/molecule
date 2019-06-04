@@ -1,0 +1,21 @@
+---
+# handlers file for clamav
+- name: Clamav | Restart clamd service
+  service:
+    name: "{{ clamav_service }}"
+    state: restarted
+- name: Restart server for SELinux (only if status changed)
+  shell: sleep 2 && shutdown -r now "Ansible reboot"
+  async: 1
+  poll: 0
+  ignore_errors: true
+  listen: "selinux enforced"
+
+- name: Wait for server to come back
+  local_action: wait_for
+  args:
+    host: "{{ ansible_host }}"
+    state: started
+    delay: 30
+    timeout: 300
+  listen: "selinux enforced"
